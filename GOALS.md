@@ -3,7 +3,7 @@
  _ look for subways/buses/nearby businesses
  _ use geomap to map:
     + building
-    + nearby businesses, specify with keyword/search yelp
+    + nearby businesses, specify with keyword/search yelp/google
     + public transportation
-+ use some resource to evaluate price
+    + use some resource to evaluate price
 + corners get bonus points

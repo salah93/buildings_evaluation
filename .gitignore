@@ -4,4 +4,8 @@
 .ipynb_checkpoints
 *.ipynb
 api_keys.py
-tests
+__pycache__
+.cache
+jsfiddle.html
+results
+*.csv
