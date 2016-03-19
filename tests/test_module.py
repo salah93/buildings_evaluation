@@ -16,6 +16,8 @@ def test_get_nearby_places():
     stores_in_area = get_nearby_places(address, search_query)
     # a lot of stores in area, TODO: think of better test
     assert len(stores_in_area) > 5
+    unfiltered_search = get_nearby_places(address)
+    assert len(unfiltered_search) > len(stores_in_area)
 
 
 def test_get_nearby_transit():

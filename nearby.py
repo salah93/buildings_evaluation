@@ -10,19 +10,24 @@ from invisibleroads_macros.disk import make_folder
 RADIUS = 300
 
 
-def get_nearby_places(address, search_query):
+def get_nearby_places(address, search_query=None):
+    # places search api
     url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
     google_geo = geopy.GoogleV3()
     location = google_geo.geocode(address)
     location = str(location.latitude) + ',' + str(location.longitude)
     params = dict(location=location, radius=RADIUS,
-                  type=search_query, key=places_key)
-    response = requests.get(url, params)
+                  key=places_key)
+    if search_query:
+        params['type'] = search_query
+    response = requests.get(url, params=params)
     return response.json()['results']
 
 
 def get_nearby_transit(address):
     results = []
+    # only allowed one type search per query
+    # (multiple-type searches is deprecated)
     types = ['bus_station', 'subway_station']
     for query in types:
         results.extend(get_nearby_places(address, query))
@@ -30,10 +35,10 @@ def get_nearby_transit(address):
 
 
 def geomap(address, search_query, target_folder):
-    path = os.path.join(target_folder, 'search.csv')
     searches = get_nearby_places(address, search_query)
     transit = get_nearby_transit(address)
     google_geo = geopy.GoogleV3()
+    # get lat/lng of given address
     coordinates = google_geo.geocode(address)
     building_query_color, building_query_radius = 'red', 20
     searches_color, searches_radius = 'green', 10
@@ -44,8 +49,10 @@ def geomap(address, search_query, target_folder):
     csv_list = [columns, building]
     add_to_csv(searches, searches_color, searches_radius, csv_list)
     add_to_csv(transit, transit_color, transit_radius, csv_list)
+    path = os.path.join(target_folder, 'search.csv')
     with open(path, 'w') as csvfile:
         csv.writer(csvfile).writerows(csv_list)
+    # required print statement for crosscompute (http://crosscompute.com/docs)
     print('coordinates_geotable_path = ' + path)
 
 
@@ -65,6 +72,6 @@ if __name__ == '__main__':
     parser.add_argument('--address',
                         type=str, required=True)
     parser.add_argument('--search_query',
-                        type=str, required=True)
+                        type=str, default=None)
     args = parser.parse_args()
     geomap(args.address, args.search_query, args.target_folder)
