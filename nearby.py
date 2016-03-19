@@ -35,20 +35,28 @@ def get_nearby_transit(address):
 
 
 def geomap(address, search_query, target_folder):
+    search_query = search_query.strip()
     searches = get_nearby_places(address, search_query)
     transit = get_nearby_transit(address)
     google_geo = geopy.GoogleV3()
     # get lat/lng of given address
     coordinates = google_geo.geocode(address)
+    building_descr = "Queried Building"
     building_query_color, building_query_radius = 'red', 20
+    searches_descr = "Nearby " + search_query
     searches_color, searches_radius = 'green', 10
+    transit_descr = "Nearby bus or subway"
     transit_color, transit_radius = 'blue', 10
-    columns = ('latitude', 'longitude', 'fillcolor', 'radiusinpixels')
-    building = (coordinates.latitude, coordinates.longitude,
+    columns = ('description', 'latitude',
+               'longitude', 'FillColor', 'radius_in_pixels')
+    building = (building_descr,
+                coordinates.latitude, coordinates.longitude,
                 building_query_color, building_query_radius)
     csv_list = [columns, building]
-    add_to_csv(searches, searches_color, searches_radius, csv_list)
-    add_to_csv(transit, transit_color, transit_radius, csv_list)
+    add_to_csv(searches, searches_descr,
+               searches_color, searches_radius, csv_list)
+    add_to_csv(transit, transit_descr,
+               transit_color, transit_radius, csv_list)
     path = os.path.join(target_folder, 'search.csv')
     with open(path, 'w') as csvfile:
         csv.writer(csvfile).writerows(csv_list)
@@ -56,9 +64,10 @@ def geomap(address, search_query, target_folder):
     print('coordinates_geotable_path = ' + path)
 
 
-def add_to_csv(item_list, color, radius, csv_list=None):
+def add_to_csv(item_list, description, color, radius, csv_list=None):
     for query in item_list:
-        location = (query['geometry']['location']['lat'],
+        location = (description,
+                    query['geometry']['location']['lat'],
                     query['geometry']['location']['lng'],
                     color,
                     radius)
