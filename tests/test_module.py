@@ -5,7 +5,7 @@ from invisibleroads_macros.disk import make_folder
 
 
 TEST_FOLDER = os.path.dirname(os.path.abspath(__file__))
-# insert tabulate tools in sys path so you can import
+# insert module in sys path so you can import
 sys.path.insert(0, os.path.dirname(TEST_FOLDER))
 from nearby import get_nearby_places, get_nearby_transit, geomap
 
