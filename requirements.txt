@@ -1,6 +1,4 @@
 crosscompute
-crosscompute-text 
-crosscompute-table
 crosscompute-geotable
 geopy
 invisibleroads_macros
