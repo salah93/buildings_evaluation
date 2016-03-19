@@ -1,7 +1,7 @@
 # Tool
 + evaluate a buildings value
- _ look for subways/buses/nearby businesses
- _ use geomap to map:
+ + look for subways/buses/nearby businesses
+ + use geomap to map:
     + building
     + nearby businesses, specify with keyword/search yelp/google
     + public transportation
