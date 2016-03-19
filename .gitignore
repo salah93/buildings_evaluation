@@ -1,0 +1,7 @@
+*.pyc
+*.swp
+.DS_STORE
+.ipynb_checkpoints
+*.ipynb
+api_keys.py
+tests
