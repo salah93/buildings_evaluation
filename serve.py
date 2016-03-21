@@ -1,3 +1,4 @@
+from api_keys import map_key
 from flask import (jsonify, Flask,
                    render_template, request)
 from invisibleroads_macros import security
@@ -7,14 +8,14 @@ from nearby import geomap
 app = Flask(__name__)
 
 
-# Making an API endpoint (GET)
 @app.route('/_get_points')
 def get_points():
     address = request.args.get('address', "")
     search_query = request.args.get('search_query', "")
     results = geomap(address, search_query)
     print(results)
-    return jsonify(address=results['address'],
+    return jsonify(map_key=map_key,
+                   address=results['address'],
                    points=results['points'])
 
 
