@@ -34,7 +34,12 @@ def get_nearby_transit(address):
     return results
 
 
-def geomap(address, search_query, target_folder):
+def geomap(address, search_query, target_folder=None):
+    if not address.strip():
+        error_address = '1234 sesame street'
+        error_points = '1234 poop road'
+        return {'address': {'address': error_address},
+                'points': {'address': error_points}}
     search_query = search_query.strip()
     searches = get_nearby_places(address, search_query)
     transit = get_nearby_transit(address)
@@ -49,28 +54,35 @@ def geomap(address, search_query, target_folder):
     transit_color, transit_radius = 'blue', 10
     columns = ('description', 'latitude',
                'longitude', 'FillColor', 'radius_in_pixels')
-    building = (building_descr,
-                coordinates.latitude, coordinates.longitude,
-                building_query_color, building_query_radius)
-    csv_list = [columns, building]
+    building = dict(description=building_descr,
+                    latitude=coordinates.latitude,
+                    longitude=coordinates.longitude,
+                    color=building_query_color,
+                    radius=building_query_radius)
+    points_list = [columns, building]
     add_to_csv(searches, searches_descr,
-               searches_color, searches_radius, csv_list)
+               searches_color, searches_radius, points_list)
     add_to_csv(transit, transit_descr,
-               transit_color, transit_radius, csv_list)
-    path = os.path.join(target_folder, 'search.csv')
-    with open(path, 'w') as csvfile:
-        csv.writer(csvfile).writerows(csv_list)
-    # required print statement for crosscompute (http://crosscompute.com/docs)
-    print('coordinates_geotable_path = ' + path)
+               transit_color, transit_radius, points_list)
+    if target_folder:
+        path = os.path.join(target_folder, 'search.csv')
+        with open(path, 'w') as csvfile:
+            csv.writer(csvfile).writerows(points_list)
+        # required print statement for crosscompute
+        #   (http://crosscompute.com/docs)
+        print('coordinates_geotable_path = ' + path)
+    building = dict(latitude=building['latitude'],
+                    longitude=[building['longitude']])
+    return dict(address=building, points=points_list[1:])
 
 
 def add_to_csv(item_list, description, color, radius, csv_list=None):
     for query in item_list:
-        location = (description,
-                    query['geometry']['location']['lat'],
-                    query['geometry']['location']['lng'],
-                    color,
-                    radius)
+        location = dict(description=description,
+                        latitude=query['geometry']['location']['lat'],
+                        longitude=query['geometry']['location']['lng'],
+                        color=color,
+                        radius=radius)
         csv_list.append(location)
 
 
