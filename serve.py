@@ -1,4 +1,4 @@
-from api_keys import map_key
+from api_keys import google_map_key
 from flask import (jsonify, Flask,
                    render_template, request)
 from invisibleroads_macros import security
@@ -14,14 +14,13 @@ def get_points():
     search_query = request.args.get('nearby', "")
     results = geomap(address, search_query)
     print(results)
-    return jsonify(map_key=map_key,
-                   address=results['address'],
+    return jsonify(address=results['address'],
                    points=results['points'])
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', key=google_map_key)
 
 
 if __name__ == "__main__":
