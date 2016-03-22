@@ -14,10 +14,8 @@ def get_nearby_places(address, search_query=None):
     # places search api
     url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
     google_geo = geopy.GoogleV3()
-    try:
-        location = google_geo.geocode(address)
-    except geopy.GeocoderTimedOut:
-        return []
+    # TODO: check for exceptions
+    location = google_geo.geocode(address)
     location = str(location.latitude) + ',' + str(location.longitude)
     params = dict(location=location, radius=RADIUS,
                   key=places_key)
