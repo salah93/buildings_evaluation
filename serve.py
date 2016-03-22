@@ -11,7 +11,7 @@ app = Flask(__name__)
 @app.route('/_get_points')
 def get_points():
     address = request.args.get('address', "")
-    search_query = request.args.get('search_query', "")
+    search_query = request.args.get('nearby', "")
     results = geomap(address, search_query)
     print(results)
     return jsonify(map_key=map_key,

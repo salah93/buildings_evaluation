@@ -7,14 +7,17 @@ from api_keys import places_key
 from invisibleroads_macros.disk import make_folder
 
 
-RADIUS = 300
+RADIUS = 600
 
 
 def get_nearby_places(address, search_query=None):
     # places search api
     url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
     google_geo = geopy.GoogleV3()
-    location = google_geo.geocode(address)
+    try:
+        location = google_geo.geocode(address)
+    except geopy.GeocoderTimedOut:
+        return []
     location = str(location.latitude) + ',' + str(location.longitude)
     params = dict(location=location, radius=RADIUS,
                   key=places_key)
@@ -34,31 +37,35 @@ def get_nearby_transit(address):
     return results
 
 
+def get_nearby_schools(address):
+    query = "school"
+    results = get_nearby_places(address, query)
+    return results
+
+
 def geomap(address, search_query, target_folder=None):
     if not address.strip():
         return []
     search_query = search_query.strip()
     searches = get_nearby_places(address, search_query)
     transit = get_nearby_transit(address)
+    schools = get_nearby_schools(address)
     google_geo = geopy.GoogleV3()
     # get lat/lng of given address
     coordinates = google_geo.geocode(address)
-    building_descr = "Queried Building"
-    building_query_color, building_query_radius = 'red', 20
-    searches_descr = "Nearby " + search_query
-    searches_color, searches_radius = 'green', 10
-    transit_descr = "Nearby bus or subway"
-    transit_color, transit_radius = 'blue', 10
-    building = dict(description=building_descr,
+    building_descr = ("Queried Building", "red", 20)
+    searches_descr = ("Nearby " + search_query, "green", 10)
+    transit_descr = ("Nearby bus or subway", "blue", 10)
+    school_descr = ("Nearby School", "yellow", 10)
+    building = dict(description=building_descr[0],
                     latitude=coordinates.latitude,
                     longitude=coordinates.longitude,
-                    color=building_query_color,
-                    radius=building_query_radius)
+                    color=building_descr[1],
+                    radius=building_descr[2])
     points_list = [building]
-    add_to_csv(searches, searches_descr,
-               searches_color, searches_radius, points_list)
-    add_to_csv(transit, transit_descr,
-               transit_color, transit_radius, points_list)
+    add_to_csv(searches, searches_descr, points_list)
+    add_to_csv(transit, transit_descr, points_list)
+    add_to_csv(schools, school_descr, points_list)
     if target_folder:
         path = os.path.join(target_folder, 'search.csv')
         with open(path, 'w') as csvfile:
@@ -80,13 +87,13 @@ def geomap(address, search_query, target_folder=None):
     return dict(address=building, points=points_list)
 
 
-def add_to_csv(item_list, description, color, radius, csv_list=None):
+def add_to_csv(item_list, description, csv_list=None):
     for query in item_list:
-        location = dict(description=description,
+        location = dict(description=description[0],
                         latitude=query['geometry']['location']['lat'],
                         longitude=query['geometry']['location']['lng'],
-                        color=color,
-                        radius=radius)
+                        color=description[1],
+                        radius=description[2])
         csv_list.append(location)
 
 
