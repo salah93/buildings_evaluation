@@ -5,7 +5,6 @@ $('.submit').on('click', function(){
         address: $('.address').val(),
         nearby: $('select.search_query').val()
     }, function(data) {
-        console.log("finished")
         $('.result').html("<div id=map></div><div class='floating-panel'><input type='button' value='Toggle Street View' onclick='toggleStreetView();'></input></div>");
         building = {lat: data.address.latitude, lng: data.address.longitude};
         var map = new google.maps.Map(document.getElementById('map'), {
