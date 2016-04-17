@@ -1,10 +1,10 @@
 import argparse
 import csv
 import geopy
-import os
 import requests
-from api_keys import places_key
 from invisibleroads_macros.disk import make_folder
+from os import environ
+from os.path import join
 
 
 RADIUS = 600
@@ -17,8 +17,7 @@ def get_nearby_places(address, search_query=None):
     # TODO: check for exceptions
     location = google_geo.geocode(address)
     location = str(location.latitude) + ',' + str(location.longitude)
-    params = dict(location=location, radius=RADIUS,
-                  key=places_key)
+    params = dict(location=location, radius=RADIUS, key=environ['GOOGLE_KEY'])
     if search_query:
         params['type'] = search_query
     response = requests.get(url, params=params)
@@ -65,7 +64,7 @@ def geomap(address, search_query, target_folder=None):
     add_to_csv(transit, transit_descr, points_list)
     add_to_csv(schools, school_descr, points_list)
     if target_folder:
-        path = os.path.join(target_folder, 'search.csv')
+        path = join(target_folder, 'search.csv')
         with open(path, 'w') as csvfile:
             columns = ('description', 'latitude',
                        'longitude', 'FillColor', 'radius_in_pixels')
