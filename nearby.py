@@ -1,12 +1,13 @@
 import argparse
 import csv
+from os import environ
+from os.path import join
+
 import geopy
 import numpy as np
 import pandas as pd
 import requests
 from invisibleroads_macros.disk import make_folder
-from os import environ
-from os.path import join
 
 types = ['accounting',
          'airport',

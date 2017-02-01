@@ -1,6 +1,8 @@
 crosscompute
-crosscompute-geotable
+crosscompute-types
 geopy
 invisibleroads_macros
+numpy
+pandas
 pytest
 requests
