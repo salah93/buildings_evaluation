@@ -1,106 +1,160 @@
 import argparse
 import csv
 import geopy
+import numpy as np
+import pandas as pd
 import requests
 from invisibleroads_macros.disk import make_folder
 from os import environ
 from os.path import join
 
+types = ['accounting',
+         'airport',
+         'amusement_park',
+         'aquarium',
+         'art_gallery',
+         'atm',
+         'bakery',
+         'bank',
+         'bar',
+         'beauty_salon',
+         'bicycle_store',
+         'book_store',
+         'bowling_alley',
+         'bus_station',
+         'cafe',
+         'campground',
+         'car_dealer',
+         'car_rental',
+         'car_repair',
+         'car_wash',
+         'casino',
+         'cemetery',
+         'church',
+         'city_hall',
+         'clothing_store',
+         'convenience_store',
+         'courthouse',
+         'dentist',
+         'department_store',
+         'doctor',
+         'electrician',
+         'electronics_store',
+         'embassy',
+         'fire_station',
+         'florist',
+         'funeral_home',
+         'furniture_store',
+         'gas_station',
+         'gym',
+         'hair_care',
+         'hardware_store',
+         'hindu_temple',
+         'home_goods_store',
+         'hospital',
+         'insurance_agency',
+         'jewelry_store',
+         'laundry',
+         'lawyer',
+         'library',
+         'liquor_store',
+         'local_government_office',
+         'locksmith',
+         'lodging',
+         'meal_delivery',
+         'meal_takeaway',
+         'mosque',
+         'movie_rental',
+         'movie_theater',
+         'moving_company',
+         'museum',
+         'night_club',
+         'painter',
+         'park',
+         'parking',
+         'pet_store',
+         'pharmacy',
+         'physiotherapist',
+         'plumber',
+         'police',
+         'post_office',
+         'real_estate_agency',
+         'restaurant',
+         'roofing_contractor',
+         'rv_park',
+         'school',
+         'shoe_store',
+         'shopping_mall',
+         'spa',
+         'stadium',
+         'storage',
+         'store',
+         'subway_station',
+         'synagogue',
+         'taxi_stand',
+         'train_station',
+         'transit_station',
+         'travel_agency',
+         'university',
+         'veterinary_care',
+         'zoo']
 
-RADIUS = 600
+
+class InvalidSearchParameter(Exception):
+    pass
 
 
-def get_nearby_places(address, search_query=None):
+def get_nearby_places(lat, lng, search_query, radius):
+    if search_query not in types:
+        raise InvalidSearchParameter
+    location = str(lat) + ',' + str(lng)
     # places search api
-    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
-    google_geo = geopy.GoogleV3()
-    # TODO: check for exceptions
-    location = google_geo.geocode(address)
-    location = str(location.latitude) + ',' + str(location.longitude)
-    params = dict(location=location, radius=RADIUS, key=environ['GOOGLE_KEY'])
-    if search_query:
-        params['type'] = search_query
-    response = requests.get(url, params=params)
-    return response.json()['results']
+    places_api = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
+    params = dict(location=location,
+                  radius=radius,
+                  type=search_query,
+                  key=environ['GOOGLE_KEY'])
+    results = requests.get(places_api, params=params).json()['results']
+    return [(location['name'],
+             location['types'][0],
+             location['geometry']['location']['lat'],
+             location['geometry']['location']['lng'])
+            for location in results]
 
 
-def get_nearby_transit(address):
-    results = []
-    # only allowed one type search per query
-    # (multiple-type searches is deprecated)
-    types = ['bus_station', 'subway_station']
-    for query in types:
-        results.extend(get_nearby_places(address, query))
-    return results
-
-
-def get_nearby_schools(address):
-    query = "school"
-    results = get_nearby_places(address, query)
-    return results
-
-
-def geomap(address, search_query, target_folder=None):
-    if not address.strip():
-        return []
-    search_query = search_query.strip()
-    searches = get_nearby_places(address, search_query)
-    transit = get_nearby_transit(address)
-    schools = get_nearby_schools(address)
-    google_geo = geopy.GoogleV3()
-    # get lat/lng of given address
-    coordinates = google_geo.geocode(address)
-    building_descr = ("Queried Building", "red", 20)
-    searches_descr = ("Nearby " + search_query, "green", 10)
-    transit_descr = ("Nearby bus or subway", "blue", 10)
-    school_descr = ("Nearby School", "yellow", 10)
-    building = dict(description=building_descr[0],
-                    latitude=coordinates.latitude,
-                    longitude=coordinates.longitude,
-                    color=building_descr[1],
-                    radius=building_descr[2])
-    points_list = [building]
-    add_to_csv(searches, searches_descr, points_list)
-    add_to_csv(transit, transit_descr, points_list)
-    add_to_csv(schools, school_descr, points_list)
-    if target_folder:
-        path = join(target_folder, 'search.csv')
-        with open(path, 'w') as csvfile:
-            columns = ('description', 'latitude',
-                       'longitude', 'FillColor', 'radius_in_pixels')
-            writer = csv.writer(csvfile)
-            writer.writerow(columns)
-            writer.writerows([(row['description'],
-                               row['latitude'],
-                               row['longitude'],
-                               row['color'],
-                               row['radius'])
-                              for row in points_list])
-        # required print statement for crosscompute
-        #   (http://crosscompute.com/docs)
-        print('coordinates_geotable_path = ' + path)
-    building = dict(latitude=building['latitude'],
-                    longitude=building['longitude'])
-    return dict(address=building, points=points_list)
-
-
-def add_to_csv(item_list, description, csv_list=None):
-    for query in item_list:
-        location = dict(description=description[0],
-                        latitude=query['geometry']['location']['lat'],
-                        longitude=query['geometry']['location']['lng'],
-                        color=description[1],
-                        radius=description[2])
-        csv_list.append(location)
+def get_n_distinct_colors(n):
+    max_value = 255 ** 3
+    colors = np.linspace(0, max_value, n, endpoint=True)
+    return ['#{0}'.format(hex(I)[2:-1].zfill(6)) for I in colors]
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--target_folder',
                         type=make_folder, default='results')
+    parser.add_argument('--radius',
+                        type=int, default=600)
     parser.add_argument('--address',
                         type=str, required=True)
-    parser.add_argument('--search_query',
-                        type=str, default=None)
+    parser.add_argument('--search_queries', metavar='PATH',
+                        required=True)
     args = parser.parse_args()
-    geomap(args.address, args.search_query, args.target_folder)
+    queried_building_pixel_size = 20
+    nearby_places_pixel_size = 10
+    # geocode address
+    google_geo = geopy.GoogleV3()
+    location = google_geo.geocode(args.address)
+    search_radius, lat, lng = args.radius, location.latitude, location.longitude
+    with open(args.search_queries) as f:
+        search_queries = [line.strip() for line in f.readlines()]
+    colors = get_n_distinct_colors(len(search_queries + 1))
+    header = ('description', 'latitude', 'longitude', 'FillColor', 'radius_in_pixels')
+    data =[]
+    data.append(('queried building', lat, lng, colors[0], queried_building_pixel_size))
+    for color, sq in zip(colors[1:], search_queries):
+        places = get_nearby_places(lat, lng, sq, search_radius)
+        for name, description, sq_lat, sq_lng in places:
+            data.append((description, sq_lat, sq_lng, color, nearby_places_pixel_size))
+    target_path = join(args.target_folder, 'places.csv')
+    df = pd.DataFrame(data).to_csv(target_path, header=header, index=False)
+    print('places_geotable_path = ' + target_path)
