@@ -1,6 +1,8 @@
 # Evaluate Point of Interest
-+ compatible with <a href='http://crosscompute.com'>crosscompute</a>
+An app built for [crosscompute]('http://crosscompute.com')
 
-search for nearby businesses (competition >;o) and transit (foot traffic)  
-for a specified location, 
-evaluates value of building based on this criteria (in development)
+Use google places api to search for nearby places on a queried address.
+
+Must have google places api key saved as environment variable `GOOGLE_KEY`
+
+I built this app to evaluate buildings (looking for schools and metro nearby)
