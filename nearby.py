@@ -148,7 +148,7 @@ if __name__ == '__main__':
     search_radius, lat, lng = args.radius, location.latitude, location.longitude
     with open(args.search_queries) as f:
         search_queries = [line.strip() for line in f.readlines()]
-    colors = get_n_distinct_colors(len(search_queries + 1))
+    colors = get_n_distinct_colors(len(search_queries) + 1)
     header = ('description', 'latitude', 'longitude', 'FillColor', 'radius_in_pixels')
     data =[]
     data.append(('queried building', lat, lng, colors[0], queried_building_pixel_size))
