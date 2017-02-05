@@ -1,5 +1,5 @@
 # Evaluate Point of Interest
-An app built for [crosscompute]('https://crosscompute.com/docs')
+An app built for [crosscompute](https://crosscompute.com/docs)
 
 Use google places api to search for nearby places on a queried address.
 
