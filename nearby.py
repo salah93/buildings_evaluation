@@ -114,7 +114,7 @@ def get_nearby_places(lat, lng, search_query, radius):
     params = dict(location=location,
                   radius=radius,
                   type=search_query,
-                  key=environ['GOOGLE_KEY'])
+                  key=environ['GOOGLE_PLACES_KEY'])
     results = requests.get(places_api, params=params).json()['results']
     return [(location['name'],
              location['types'][0],
