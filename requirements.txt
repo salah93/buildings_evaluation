@@ -1,4 +1,5 @@
 crosscompute
+crosscompute-select
 crosscompute-types
 geopy
 invisibleroads_macros

@@ -137,8 +137,7 @@ if __name__ == '__main__':
                         type=int, default=600)
     parser.add_argument('--address',
                         type=str, required=True)
-    parser.add_argument('--search_queries', metavar='PATH',
-                        required=True)
+    parser.add_argument('--search_queries', required=True)
     args = parser.parse_args()
     queried_building_pixel_size = 20
     nearby_places_pixel_size = 10
@@ -146,8 +145,9 @@ if __name__ == '__main__':
     google_geo = geopy.GoogleV3()
     location = google_geo.geocode(args.address)
     search_radius, lat, lng = args.radius, location.latitude, location.longitude
-    with open(args.search_queries) as f:
-        search_queries = [line.strip() for line in f.readlines()]
+    search_queries = args.search_queries.split('\n')
+    print(args.search_queries)
+    print(search_queries)
     colors = get_n_distinct_colors(len(search_queries) + 1)
     header = ('description', 'latitude', 'longitude', 'FillColor', 'radius_in_pixels')
     data =[]
